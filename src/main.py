@@ -12,7 +12,7 @@ import discord
 from discord.ext import commands, tasks
 from dislash import InteractionClient, Option, OptionType
 
-from .data import config, config_global
+from data import config, config_global
 
 
 # -------------------- Init -------------------- #
