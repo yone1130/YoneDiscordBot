@@ -7,6 +7,8 @@
 
 import os
 from pydoc import describe
+import string
+from tokenize import String
 
 import discord
 from discord.ext import commands, tasks
@@ -311,7 +313,7 @@ async def on_message(message):
       print(message.channel.id)
       print("\n")
 
-      #送信元には送信しない
+      # 送信元には送信しない
       if message.channel.id == chan:
         continue
 
@@ -342,11 +344,45 @@ async def on_message(message):
 
       try:
         await channel.send(embed=embed)  # 送信
-        return
       except Exception as e:
         await message.reply("送信エラーが発生しました。")
+        print(chan)
         print(e)
-        return
+
+  return
+
+
+# ----- Number ----- #
+@slash.slash_command(
+  name = 'global-chk',
+  description = 'グローバルチャットの登録数の確認'
+)
+async def initGlobal(inter):
+
+  content = ""
+
+  #embed color
+  color = 0x40ff40
+
+  #embed生成
+  embed = discord.Embed(
+    title=f"グローバルチャットの登録数：{str(len(config_global.globalChannels))}",
+    color=color,
+    description=content
+  )
+
+  #すべての登録されているチャンネルをスクレイピング
+  for chan in config_global.globalChannels:
+
+    channel = bot.get_channel(chan)
+
+    embed.add_field(
+      name=channel.guild.name,
+      value=channel.name
+    )
+
+  await inter.reply(embed=embed)  # 送信
+  return
 
 
 # ---------- RUN ---------- #
