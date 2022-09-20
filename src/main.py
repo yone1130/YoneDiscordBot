@@ -6,12 +6,9 @@
 #
 
 import os
-from pydoc import describe
-import string
-from tokenize import String
 
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 from dislash import InteractionClient, Option, OptionType
 
 from data import config, config_global
@@ -44,41 +41,21 @@ async def on_ready():
 
 
 # ---------- Commands ---------- #
-# ----- yb ----- #
+# ----- info ----- #
 @slash.slash_command(
-    name = 'yb',
+    name = 'info',
     description = '情報表示',
 )
-async def yb(inter):
+async def info(inter):
   embed = discord.Embed(
     title="Yone Bot",
     color= 0x40ff40,
     description=""
   )
   embed.add_field(
-    name='Ver -',
-    value='コマンドのヘルプを表示するには `/help` と送信してください\n\n'+
-          '(c) 2022 よね/Yone\n'+
+    name='Ver 1.0.0',
+    value='(c) 2022 よね/Yone\n'+
           '不具合等の連絡は <@892376684093898772> までお願いいたします。'
-  )
-  await inter.reply(embed=embed)
-  return
-
-
-# ----- help ----- #
-@slash.slash_command(
-    name = 'help',
-    description = 'コマンドヘルプを表示',
-)
-async def help(inter):
-  embed = discord.Embed(
-    title="コマンドヘルプ",
-    color= 0x40ff40,
-    description=""
-  )
-  embed.add_field(
-    name='/yb',
-    value='botの情報を表示します'
   )
   await inter.reply(embed=embed)
   return
@@ -137,76 +114,6 @@ async def embed(inter, title=None, description=None, name=None, value=None, colo
   return
 
 
-# ----- Status ----- #
-@slash.slash_command(
-    name = 'status',
-    description = 'ステータス表示',
-    options=[
-      Option("get_user", "取得するユーザー", OptionType.USER)
-    ]
-)
-async def status(inter, get_user=None):
-
-  #引数ユーザーが指定されている場合はそれを、指定されていない場合はコマンド実行者として処理
-  if get_user == None:
-    user = inter.author
-
-  #アクティビティをスクレイピング
-  for activity in user.activities:
-    await inter.reply(f"{user} is status: {activity}")
-    return
-
-  #スルー時は再生していないものとして処理
-  embed = discord.Embed(
-    title="Status",
-    color=0x40ff40,
-    description=f"{user.mention}ステータスなし。"
-  )
-  await inter.reply(embed=embed)
-  return
-
-
-# ----- Spotify ----- #
-@slash.slash_command(
-    name = 'spotify',
-    description = 'ステータスSpotifyの表示',
-    options=[
-      Option("get_user", "取得するユーザー", OptionType.USER)
-    ]
-)
-async def spotify(inter, get_user=None):
-
-  #引数ユーザーが指定されている場合はそれを、指定されていない場合はコマンド実行者として処理
-  user = get_user or inter.author
-
-  #アクティビティをスクレイピング
-  for activity in user.activities:
-
-    #ステータスSpotifyのみ取り出し
-    if isinstance(user.activities, discord.Spotify):
-      await inter.reply(f"{user} is listening to {activity.title} by {activity.artist}")
-      return
-    
-    #インスタンス生成例外
-    else:
-      embed = discord.Embed(
-        title="エラーが発生しました。",
-        color=0xff4040,
-        description="ステータスの解析に失敗"
-      )
-      await inter.reply(embed=embed)
-      return
-
-  #スルー時は再生していないものとして処理
-  embed = discord.Embed(
-    title="Spotify",
-    color=0x40ff40,
-    description=f"{user.mention}はSpotifyを再生していません。"
-  )
-  await inter.reply(embed=embed)
-  return
-
-
 # ----------------------------------------------------- #
 # -------------------- Global Chat -------------------- #
 # ----------------------------------------------------- #
@@ -247,9 +154,7 @@ async def initGlobal(inter, category_id=None, channel_name=None):
 
   #チャンネルの作成 失敗時
   except Exception as e:
-    await inter.reply(
-      "チャンネルを作成できませんでした。"
-    )
+    await inter.reply("チャンネルを作成できませんでした。")
     return
 
   #完了メッセージの送信
@@ -283,8 +188,7 @@ async def initGlobal(inter, category_id=None, channel_name=None):
     )
 
     try:
-      await channel.send(embed=embed)  # 送信
-      return
+      await channel.send(embed=embed)
     except Exception as e:
       await inter.reply("一部のサーバーに送信できませんでした。")
       return
@@ -352,7 +256,7 @@ async def on_message(message):
   return
 
 
-# ----- Number ----- #
+# ----- Check ----- #
 @slash.slash_command(
   name = 'global-chk',
   description = 'グローバルチャットの登録数の確認'
@@ -381,7 +285,7 @@ async def initGlobal(inter):
       value=channel.name
     )
 
-  await inter.reply(embed=embed)  # 送信
+  await inter.reply(embed=embed)
   return
 
 
