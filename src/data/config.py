@@ -5,5 +5,8 @@
 # licensed under the Apache License 2.0
 #
 
+#バージョン
+version = "1.1.0"
+
 # Discord Botのトークン
 TOKEN = ""
