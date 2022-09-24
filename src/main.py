@@ -8,31 +8,36 @@
 import os
 import time
 
+#Discord Bot
 import discord
 from discord.ext import commands
 from dislash import InteractionClient, Option, OptionType
 
+#Config
 from data import config, config_global
 
 
 # -------------------- Init -------------------- #
-
 os.system('cls')
 print(
-  f"Yone Discord Bot  {config.vesion}\n"+\
-  f"(c) 2022 よね/Yone\n\n"+\
-  f"discord.py  Ver {discord.__version__}\n\n"+\
-  f"--------------------\n"
+    f"Yone Discord Bot  {config.version}\n"+\
+    f"(c) 2022 よね/Yone\n\n"+\
+    f"discord.py  Ver {discord.__version__}\n\n"+\
+    f"--------------------\n"
 )
 
-#discord インスタンス生成
+
+# ---------- Instance ---------- #
+#discord
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix = '/', intents=intents)
 
-#dislash インスタンス生成
+#dislash
 slash = InteractionClient(bot)
 
-cooldownTime = 120
+
+# ---------- Init val ---------- #
+cooldownTime = 10
 cmdUseLast   = -1
 
 
@@ -40,38 +45,37 @@ cmdUseLast   = -1
 # ---------- On ready ---------- #
 @bot.event
 async def on_ready():
-    # await bot.change_presence(activity=discord.Game(name=""))
     print(">Ready.  Waiting for any command and message\n")
 
 
 # ---------- Commands ---------- #
 def chkCooldown():
 
-  global cmdUseLast
+    global cmdUseLast
 
-  nowTime = time.time()
+    nowTime = time.time()
 
-  if not(nowTime - cmdUseLast <= cooldownTime):
-      cmdUseLast = nowTime
-      return True, None
-  else:
-      return False, int(cooldownTime - (nowTime - cmdUseLast))
+    if not(nowTime - cmdUseLast <= cooldownTime):
+        cmdUseLast = nowTime
+        return True, None
+    else:
+        return False, int(cooldownTime - (nowTime - cmdUseLast))
 
 
 # ----- Too many ----- #
 async def tooMany(inter, time):
-  await inter.reply(
-      embed=discord.Embed(
-          title="エラーが発生しました",
-          color= 0xff4040,
-          description= "コマンドの実行頻度が多すぎます。\n"+
-                      f"約{time}秒間お待ちください。"
-      )
-      .set_footer(
-          text=f"エラーコード: 0x0201"
-      )
-  )
-  return
+    await inter.reply(
+        embed=discord.Embed(
+            title="エラーが発生しました",
+            color= 0xff4040,
+            description= "コマンドの実行頻度が多すぎます。\n"+
+                        f"約{time}秒間お待ちください。"
+        )
+        .set_footer(
+            text=f"エラーコード: 0x0201"
+        )
+    )
+    return
 
 
 # ----- info ----- #
@@ -81,25 +85,25 @@ async def tooMany(inter, time):
 )
 async def info(inter):
 
-  isCooldown, time = chkCooldown()
+    isCooldown, time = chkCooldown()
 
-  if isCooldown:
-    embed = discord.Embed(
-      title="Yone Bot",
-      color= 0x40ff40,
-      description=""
-    )
-    embed.add_field(
-      name=f'Ver {config.version}',
-      value='(c) 2022 よね/Yone\n'+
-            '不具合等の連絡は <@892376684093898772> までお願いいたします。'
-    )
-    await inter.reply(embed=embed)
-    return
+    if isCooldown:
+        embed = discord.Embed(
+        title="Yone Bot",
+            color= 0x40ff40,
+            description=""
+        )
+        embed.add_field(
+            name=f'Ver {config.version}',
+            value='(c) 2022 よね/Yone\n'+
+                    '不具合等の連絡は <@892376684093898772> までお願いいたします。'
+        )
+        await inter.reply(embed=embed)
+        return
 
-  else:
-    await tooMany(inter, time)
-    return
+    else:
+        await tooMany(inter, time)
+        return
 
 
 # ----- Embed ----- #
@@ -107,59 +111,120 @@ async def info(inter):
     name = 'embed',
     description = 'embedメッセージを生成',
     options=[
-      Option("title", "タイトル（任意）", OptionType.STRING),
-      Option("description", "概要（任意）", OptionType.STRING),
-      Option("name", "タイトル（必須）", OptionType.STRING),
-      Option("value", "本文（必須）", OptionType.STRING),
-      Option("color", "16進数RGB型（例: 40ff40）（任意）", OptionType.STRING),
+        Option("title", "タイトル（任意）", OptionType.STRING),
+        Option("description", "概要（任意）", OptionType.STRING),
+        Option("name", "タイトル（必須）", OptionType.STRING),
+        Option("value", "本文（必須）", OptionType.STRING),
+        Option("color", "16進数RGB型（例: 40ff40）（任意）", OptionType.STRING),
     ]
 )
 async def embed(inter, title=None, description=None, name=None, value=None, color=None):
 
-  isCooldown, time = chkCooldown()
+    #クールダウンの確認
+    isCooldown, time = chkCooldown()
 
-  if isCooldown:
+    #クールダウン中でない場合
+    if isCooldown:
 
-    #引数が指定されていない場合
-    if title == None:
-      title = ""
-    if description == None: 
-      description = ""
-    if color == None:
-      color="40ff00"
+        #引数が指定されていない場合
+        if title == None:
+            title = ""
+        if description == None: 
+            description = ""
+        if color == None:
+            color="40ff00"
 
-    #必須引数が指定されていない場合
-    if name == None:
-      await inter.reply("引数name は必須項目です。")
-      return
-    if value == None:
-      await inter.reply("引数value は必須項目です。")
-      return
+        #必須引数が指定されていない場合
+        if name == None:
+            await inter.reply("引数name は必須項目です。")
+            return
+        if value == None:
+            await inter.reply("引数value は必須項目です。")
+            return
 
-    #変数colorを16進数に変換
-    try:
-      color = int(color, 16)
-    except Exception as e:
-      await inter.reply("引数color が16進数RGB型ではありません。（例: 40ff40）")
-      return
+        #変数colorを16進数に変換
+        try:
+            color = int(color, 16)
+        except Exception as e:
+            await inter.reply("引数color が16進数RGB型ではありません。（例: 40ff40）")
+            return
 
-    #embed生成
-    embed = discord.Embed(
-      title=title,
-      color=color,
-      description=description
-    )
-    embed.add_field(
-      name=name,
-      value=value
-    )
+        #embed生成
+        embed = discord.Embed(
+            title=title,
+            color=color,
+            description=description
+        )
+        embed.add_field(
+            name=name,
+            value=value
+        )
 
-    #送信
-    await inter.reply(embed=embed)
-    return
+        #送信
+        await inter.reply(embed=embed)
+        return
 
-  else:
-    await tooMany(inter, time)
+    #クールダウン中の場合
+    else:
+        await tooMany(inter, time)
+        return
+
+
+# ----- messages ----- #
+@bot.event
+async def on_message(message):
+
+    #送信者がbotの場合は処理しない
+    if message.author.bot:
+        return
+
+    # ---------- Global Chat ---------- #
+    if message.channel.id in config_global.globalChannels:
+
+        #BANされている場合
+        if message.author.id in config_global.globalBanList:
+            await message.reply("あなたはグローバルチャット内においてBANされているため送信できません。")
+            return
+
+        #すべての登録されているチャンネルへ送信
+        for chan in config_global.globalChannels:
+
+            # 送信元には送信しない
+            if message.channel.id == chan:
+                continue
+
+            channel = bot.get_channel(chan)
+
+            # --- 送信部分 --- #
+
+            #embed color
+            color = 0x40ff40
+
+            #embed生成
+            embed = discord.Embed(
+                title="",
+                color=color,
+                description=message.content
+            )
+            embed.set_author(
+                name=message.author.name,
+                # url="",
+                icon_url=message.author.avatar_url
+            )
+            embed.set_footer(text=message.guild.name, icon_url=message.guild.icon_url)
+
+            #添付ファイルが含まれる場合
+            if message.attachments != []:
+                embed.description += "\n(添付ファイル)"
+                embed.set_image(url=message.attachments[0].proxy_url)
+
+            try:
+                await channel.send(embed=embed)  # 送信
+            except Exception as e:
+                await message.reply("送信エラーが発生しました。")
+                print(chan)
+                print(e)
+
     return
 
 
@@ -178,139 +243,77 @@ async def embed(inter, title=None, description=None, name=None, value=None, colo
 )
 async def initGlobal(inter, category_id=None, channel_name=None):
 
-  isCooldown, time = chkCooldown()
+    isCooldown, time = chkCooldown()
 
-  if isCooldown:
+    if isCooldown:
 
-    #引数が不足している場合
-    if category_id == None or channel_name == None:
-      await inter.reply(f"すべての引数を入力してください。")
-      return
+        #引数が不足している場合
+        if category_id == None or channel_name == None:
+            await inter.reply(f"すべての引数を入力してください。")
+            return
 
-    #カテゴリの取得
-    category_id = int(category_id)
-    category = bot.get_channel(category_id)
+        #カテゴリの取得
+        category_id = int(category_id)
+        category = bot.get_channel(category_id)
 
-    #引数カテゴリIDに誤りがある場合
-    if category == None:
-      await inter.reply("カテゴリIDを正しく入力してください。")
-      return
+        #引数カテゴリIDに誤りがある場合
+        if category == None:
+            await inter.reply("カテゴリIDを正しく入力してください。")
+            return
 
-    #引数カテゴリがコマンド実行時のサーバーでない場合
-    if inter.guild != category.guild:
-      await inter.reply("他のサーバーを登録することはできません。")
-      return
+        #引数カテゴリがコマンド実行時のサーバーでない場合
+        if inter.guild != category.guild:
+            await inter.reply("他のサーバーを登録することはできません。")
+            return
 
-    #チャンネルの作成
-    try:
-      ch = await category.create_text_channel(name=channel_name)
+        #チャンネルの作成
+        try:
+            ch = await category.create_text_channel(name=channel_name)
 
-    #チャンネルの作成 失敗時
-    except Exception as e:
-      await inter.reply("チャンネルを作成できませんでした。")
-      return
+        #チャンネルの作成 失敗時
+        except Exception as e:
+            await inter.reply("チャンネルを作成できませんでした。")
+            return
 
-    #完了メッセージの送信
-    await inter.reply(f"グローバルチャットのチャンネルが登録されました。{ch.mention}")
+        #完了メッセージの送信
+        await inter.reply(f"グローバルチャットのチャンネルが登録されました。{ch.mention}")
 
-    #リストに追加
-    print(
-      "[新規チャンネル登録]\n"+\
-      f"chan ID   : {ch.id}\n"+\
-      f"chan name : {ch.name}\n"+\
-      f"sever name: {ch.guild.name}\n"
-    )
-    config_global.globalChannels.append(ch.id)
+        #リストに追加
+        print(
+            "[新規チャンネル登録]\n"+\
+            f"chan ID   : {ch.id}\n"+\
+            f"chan name : {ch.name}\n"+\
+            f"sever name: {ch.guild.name}\n"
+        )
+        config_global.globalChannels.append(ch.id)
 
-    #すべての登録されているチャンネルへ送信
-    for chan in config_global.globalChannels:
+        #すべての登録されているチャンネルへ送信
+        for chan in config_global.globalChannels:
 
-      channel = bot.get_channel(chan)
+            channel = bot.get_channel(chan)
 
-      # --- 送信部分 --- #
+            # --- 送信部分 --- #
 
-      #embed color
-      color = 0x40ff40
+            #embed color
+            color = 0x40ff40
 
-      #embed生成
-      embed = discord.Embed(
-        title="新しいチャンネルが登録されました。",
-        color=color,
-        description=f"サーバー名　: {ch.guild.name}\n"+
-                    f"チャンネル名: {ch.name}\n"
-      )
+            #embed生成
+            embed = discord.Embed(
+                title="新しいチャンネルが登録されました。",
+                color=color,
+                description=f"サーバー名　: {ch.guild.name}\n"+
+                            f"チャンネル名: {ch.name}\n"
+            )
 
-      try:
-        await channel.send(embed=embed)
-      except Exception as e:
-        await inter.reply("一部のサーバーに送信できませんでした。")
+            try:
+                await channel.send(embed=embed)
+            except Exception as e:
+                await inter.reply("一部のサーバーに送信できませんでした。")
+                return
+
+    else:
+        await tooMany(inter, time)
         return
-
-  else:
-    await tooMany(inter, time)
-    return
-
-
-# ----- messages ----- #
-@bot.event
-async def on_message(message):
-
-  #送信者がbotの場合は処理しない
-  if message.author.bot:
-    return
-
-  #グローバルチャット内での送信の場合
-  if message.channel.id in config_global.globalChannels:
-
-    #BANされている場合
-    if message.author.id in config_global.globalBanList:
-      await message.reply("あなたはグローバルチャット内においてBANされているため送信できません。")
-      return
-
-    #すべての登録されているチャンネルへ送信
-    for chan in config_global.globalChannels:
-
-      print(chan)
-      print(message.channel.id)
-      print("\n")
-
-      # 送信元には送信しない
-      if message.channel.id == chan:
-        continue
-
-      channel = bot.get_channel(chan)
-
-      # --- 送信部分 --- #
-
-      #embed color
-      color = 0x40ff40
-
-      #embed生成
-      embed = discord.Embed(
-        title="",
-        color=color,
-        description=message.content
-      )
-      embed.set_author(
-        name=message.author.name,
-        # url="",
-        icon_url=message.author.avatar_url
-      )
-      embed.set_footer(text=message.guild.name, icon_url=message.guild.icon_url)
-
-      #添付ファイルが含まれる場合
-      if message.attachments != []:
-        embed.description += "\n(添付ファイル)"
-        embed.set_image(url=message.attachments[0].proxy_url)
-
-      try:
-        await channel.send(embed=embed)  # 送信
-      except Exception as e:
-        await message.reply("送信エラーが発生しました。")
-        print(chan)
-        print(e)
-
-  return
 
 
 # ----- Check ----- #
@@ -320,38 +323,38 @@ async def on_message(message):
 )
 async def initGlobal(inter):
 
-  isCooldown, time = chkCooldown()
+    isCooldown, time = chkCooldown()
 
-  if isCooldown:
+    if isCooldown:
 
-    content = ""
+        content = ""
 
-    #embed color
-    color = 0x40ff40
+        #embed color
+        color = 0x40ff40
 
-    #embed生成
-    embed = discord.Embed(
-      title=f"グローバルチャットの登録数：{str(len(config_global.globalChannels))}",
-      color=color,
-      description=content
-    )
+        #embed生成
+        embed = discord.Embed(
+            title=f"グローバルチャットの登録数：{str(len(config_global.globalChannels))}",
+            color=color,
+            description=content
+        )
 
-    #すべての登録されているチャンネルをスクレイピング
-    for chan in config_global.globalChannels:
+        #すべての登録されているチャンネルをスクレイピング
+        for chan in config_global.globalChannels:
 
-      channel = bot.get_channel(chan)
+            channel = bot.get_channel(chan)
 
-      embed.add_field(
-        name=channel.guild.name,
-        value=channel.name
-      )
+            embed.add_field(
+                name=channel.guild.name,
+                value=channel.name
+            )
 
-    await inter.reply(embed=embed)
-    return
+        await inter.reply(embed=embed)
+        return
 
-  else:
-    await tooMany(inter, time)
-    return
+    else:
+        await tooMany(inter, time)
+        return
 
 
 # ---------- RUN ---------- #
