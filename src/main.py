@@ -1,45 +1,58 @@
 #
 # main.py | Yone Discord Bot
 #
-# (c) 2022 よね/Yone
+# (c) 2022-2023 よね/Yone
 # licensed under the Apache License 2.0
 #
 
 import os
 import time
-
-#Discord Bot
+import datetime
+import requests
+from bs4 import BeautifulSoup
 import discord
 from discord.ext import commands
 from dislash import InteractionClient, Option, OptionType
-
-#Config
 from data import config, config_global
 
-
 # -------------------- Init -------------------- #
-os.system('cls')
+clearConsole = lambda: os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+clearConsole()
+
 print(
-    f"Yone Discord Bot  {config.version}\n"+\
+    f"Yone Discord Bot  Ver {config.version}\n"+\
     f"(c) 2022 よね/Yone\n\n"+\
     f"discord.py  Ver {discord.__version__}\n\n"+\
     f"--------------------\n"
 )
 
-
-# ---------- Instance ---------- #
-#discord
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix = '/', intents=intents)
+bot     = commands.Bot(command_prefix = '/', intents=intents)
+slash   = InteractionClient(bot)
 
-#dislash
-slash = InteractionClient(bot)
+class Isday:
+    def __init__(self, url):
+        self.url = url
 
+    def get(self):
+        res = requests.get(self.url)
 
-# ---------- Init val ---------- #
+        if res.status_code == requests.codes.ok:
+            soup = BeautifulSoup(res.text, "html.parser")
+
+            elemName = soup.select('#dateDtl > dt > span')
+            elemDes = soup.select('#dateDtl > dd')
+            name = elemName[0].contents[0]
+            des = elemDes[0].contents[0]
+
+            return True, name, des
+
+        else:
+            print(f"Cannot get. HTTP {res.status_code}")
+            return False, None, None
+
 cooldownTime = 10
 cmdUseLast   = -1
-
 
 # -------------------- Functions -------------------- #
 # ---------- On ready ---------- #
@@ -47,10 +60,8 @@ cmdUseLast   = -1
 async def on_ready():
     print(">Ready.  Waiting for any command and message\n")
 
-
 # ---------- Commands ---------- #
 def chkCooldown():
-
     global cmdUseLast
 
     nowTime = time.time()
@@ -58,9 +69,9 @@ def chkCooldown():
     if not(nowTime - cmdUseLast <= cooldownTime):
         cmdUseLast = nowTime
         return True, None
+
     else:
         return False, int(cooldownTime - (nowTime - cmdUseLast))
-
 
 # ----- Too many ----- #
 async def tooMany(inter, time):
@@ -77,14 +88,12 @@ async def tooMany(inter, time):
     )
     return
 
-
 # ----- info ----- #
 @slash.slash_command(
     name = 'info',
     description = '情報表示',
 )
 async def info(inter):
-
     isCooldown, time = chkCooldown()
 
     if isCooldown:
@@ -99,12 +108,12 @@ async def info(inter):
                     '不具合等の連絡は <@892376684093898772> までお願いいたします。'
         )
         await inter.reply(embed=embed)
+
         return
 
     else:
         await tooMany(inter, time)
         return
-
 
 # ----- Embed ----- #
 @slash.slash_command(
@@ -119,37 +128,33 @@ async def info(inter):
     ]
 )
 async def embed(inter, title=None, description=None, name=None, value=None, color=None):
-
-    #クールダウンの確認
     isCooldown, time = chkCooldown()
 
-    #クールダウン中でない場合
     if isCooldown:
-
-        #引数が指定されていない場合
         if title == None:
             title = ""
+
         if description == None: 
             description = ""
+
         if color == None:
             color="40ff00"
 
-        #必須引数が指定されていない場合
         if name == None:
             await inter.reply("引数name は必須項目です。")
             return
+
         if value == None:
             await inter.reply("引数value は必須項目です。")
             return
 
-        #変数colorを16進数に変換
         try:
             color = int(color, 16)
+
         except Exception as e:
             await inter.reply("引数color が16進数RGB型ではありません。（例: 40ff40）")
             return
 
-        #embed生成
         embed = discord.Embed(
             title=title,
             color=color,
@@ -159,48 +164,33 @@ async def embed(inter, title=None, description=None, name=None, value=None, colo
             name=name,
             value=value
         )
-
-        #送信
         await inter.reply(embed=embed)
+
         return
 
-    #クールダウン中の場合
     else:
         await tooMany(inter, time)
         return
 
-
 # ----- messages ----- #
 @bot.event
 async def on_message(message):
-
-    #送信者がbotの場合は処理しない
     if message.author.bot:
         return
 
     # ---------- Global Chat ---------- #
     if message.channel.id in config_global.globalChannels:
-
-        #BANされている場合
         if message.author.id in config_global.globalBanList:
             await message.reply("あなたはグローバルチャット内においてBANされているため送信できません。")
             return
 
-        #すべての登録されているチャンネルへ送信
         for chan in config_global.globalChannels:
-
-            # 送信元には送信しない
             if message.channel.id == chan:
                 continue
 
             channel = bot.get_channel(chan)
+            color   = 0x40ff40
 
-            # --- 送信部分 --- #
-
-            #embed color
-            color = 0x40ff40
-
-            #embed生成
             embed = discord.Embed(
                 title="",
                 color=color,
@@ -213,20 +203,64 @@ async def on_message(message):
             )
             embed.set_footer(text=message.guild.name, icon_url=message.guild.icon_url)
 
-            #添付ファイルが含まれる場合
             if message.attachments != []:
                 embed.description += "\n(添付ファイル)"
                 embed.set_image(url=message.attachments[0].proxy_url)
 
             try:
-                await channel.send(embed=embed)  # 送信
+                await channel.send(embed=embed)
+
             except Exception as e:
                 await message.reply("送信エラーが発生しました。")
                 print(chan)
                 print(e)
 
+    elif message.guild.id in config_global.globalChannels:
+        await message.reply("このサーバーはグローバルチャット内においてBANされているため送信できません。")
+        return
+
     return
 
+# ----- isday ----- #
+@slash.slash_command(
+    name = 'isday',
+    description = '今日は何の日かを送信します。',
+)
+async def isday(inter):
+    bs = Isday(url="https://kids.yahoo.co.jp/today/")
+    status, name, des = bs.get()
+
+    if status:
+        print(f"{name}\n{des}")
+
+        nowDate = datetime.datetime.now()
+        nowDate = nowDate.strftime('%Y年%m月%d日')
+
+        embed = discord.Embed(
+        title="今日は何の日",
+            color= 0x40ff40,
+            description=f"{nowDate}\n"
+        )
+        embed.add_field(
+            name=f"今日は {name}\n\n",
+            value=f"{des}"
+        )
+        await inter.reply(embed=embed)
+
+        return
+
+    else:
+        embed = discord.Embed(
+            title="エラーが発生しました。",
+            color= 0xff4040,
+            description="取得に失敗しました。"
+        )
+        embed.set_footer(
+            text=f"エラーコード: 0x0201"
+        )
+        await inter.reply(embed=embed)
+
+        return
 
 # ----------------------------------------------------- #
 # -------------------- Global Chat -------------------- #
@@ -242,43 +276,42 @@ async def on_message(message):
   ]
 )
 async def initGlobal(inter, category_id=None, channel_name=None):
-
     isCooldown, time = chkCooldown()
 
     if isCooldown:
-
-        #引数が不足している場合
         if category_id == None or channel_name == None:
             await inter.reply(f"すべての引数を入力してください。")
             return
 
-        #カテゴリの取得
         category_id = int(category_id)
-        category = bot.get_channel(category_id)
+        category    = bot.get_channel(category_id)
 
-        #引数カテゴリIDに誤りがある場合
         if category == None:
             await inter.reply("カテゴリIDを正しく入力してください。")
             return
 
-        #引数カテゴリがコマンド実行時のサーバーでない場合
         if inter.guild != category.guild:
             await inter.reply("他のサーバーを登録することはできません。")
             return
 
-        #チャンネルの作成
         try:
             ch = await category.create_text_channel(name=channel_name)
 
-        #チャンネルの作成 失敗時
         except Exception as e:
-            await inter.reply("チャンネルを作成できませんでした。")
+            await inter.reply(
+                embed=discord.Embed(
+                    title="エラーが発生しました",
+                    color= 0xff4040,
+                    description= "チャンネルを作成できませんでした。"
+                )
+                .set_footer(
+                    text=f"エラーコード: 0x0301"
+                )
+            )
             return
 
-        #完了メッセージの送信
         await inter.reply(f"グローバルチャットのチャンネルが登録されました。{ch.mention}")
 
-        #リストに追加
         print(
             "[新規チャンネル登録]\n"+\
             f"chan ID   : {ch.id}\n"+\
@@ -287,17 +320,10 @@ async def initGlobal(inter, category_id=None, channel_name=None):
         )
         config_global.globalChannels.append(ch.id)
 
-        #すべての登録されているチャンネルへ送信
         for chan in config_global.globalChannels:
-
             channel = bot.get_channel(chan)
+            color   = 0x40ff40
 
-            # --- 送信部分 --- #
-
-            #embed color
-            color = 0x40ff40
-
-            #embed生成
             embed = discord.Embed(
                 title="新しいチャンネルが登録されました。",
                 color=color,
@@ -307,14 +333,14 @@ async def initGlobal(inter, category_id=None, channel_name=None):
 
             try:
                 await channel.send(embed=embed)
+
             except Exception as e:
                 await inter.reply("一部のサーバーに送信できませんでした。")
-                return
+                continue
 
     else:
         await tooMany(inter, time)
         return
-
 
 # ----- Check ----- #
 @slash.slash_command(
@@ -322,26 +348,19 @@ async def initGlobal(inter, category_id=None, channel_name=None):
   description = 'グローバルチャットの登録数の確認'
 )
 async def initGlobal(inter):
-
     isCooldown, time = chkCooldown()
 
     if isCooldown:
-
         content = ""
+        color   = 0x40ff40
 
-        #embed color
-        color = 0x40ff40
-
-        #embed生成
         embed = discord.Embed(
             title=f"グローバルチャットの登録数：{str(len(config_global.globalChannels))}",
             color=color,
             description=content
         )
 
-        #すべての登録されているチャンネルをスクレイピング
         for chan in config_global.globalChannels:
-
             channel = bot.get_channel(chan)
 
             embed.add_field(
@@ -350,12 +369,12 @@ async def initGlobal(inter):
             )
 
         await inter.reply(embed=embed)
+
         return
 
     else:
         await tooMany(inter, time)
         return
-
 
 # ---------- RUN ---------- #
 bot.run(config.TOKEN)  # Login
