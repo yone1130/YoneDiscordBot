@@ -1,5 +1,5 @@
 #
-# data\config_global.py | Yone Discord Bot
+# data/config_global.py | Yone Discord Bot
 #
 # (c) 2022-2023 よね/Yone
 # licensed under the Apache License 2.0
