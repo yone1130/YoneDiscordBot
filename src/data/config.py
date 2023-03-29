@@ -5,7 +5,12 @@
 # licensed under the Apache License 2.0
 #
 
-version = "1.3.1"
+appConfig = {
+    'version': '1.4.0'
+}
 
-TOKEN = ""
-
+discordBotConfig = {
+    'Token': "",
+    'globalChannels': [],
+    'globalBanList': []
+}
