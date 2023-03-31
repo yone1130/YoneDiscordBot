@@ -3,9 +3,10 @@
 __main__.py | Yone Discord Bot
 
 (c) 2022-2023 よね/Yone
-licensed under the Apache License 2.0
+Licensed under the Apache License 2.0
 
 """
+
 import os
 import datetime
 import requests
@@ -62,7 +63,7 @@ async def on_ready():
 
 
 # ---------- Commands ---------- #
-@discord.app_commands.guilds(discord.Object(id=1053378444781703339))
+@discord.app_commands.guilds(discord.Object(id=0))
 
 
 # ----- info ----- #
