@@ -8,11 +8,12 @@ Licensed under the Apache License 2.0
 """
 
 appConfig = {
-    'version': '1.4.0'
+    'version': '1.5.0'
 }
 
 discordBotConfig = {
     'Token': "",
-    'globalChannels': [],
+    'globalChannels': [
+    ],
     'globalBanList': []
 }

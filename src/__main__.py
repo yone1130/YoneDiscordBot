@@ -13,6 +13,8 @@ import requests
 from bs4 import BeautifulSoup
 import discord
 from data import config
+import sqlite3
+import math
 
 
 # -------------------- Init -------------------- #
@@ -21,7 +23,7 @@ clearConsole()
 
 print(
     f"Yone Discord Bot  Ver {config.appConfig['version']}\n"+\
-    f"(c) 2022 よね/Yone\n\n"+\
+    f"(c) 2022-2023 よね/Yone\n\n"+\
     f"discord.py  Ver {discord.__version__}\n\n"+\
     f"--------------------\n"
 )
@@ -30,6 +32,12 @@ intents = discord.Intents.all()
 intents.message_content = True
 client = discord.Client(intents=intents)
 cmdTree = discord.app_commands.CommandTree(client=client)
+
+db_con = sqlite3.connect("bot-savedata.db")
+db_cur = db_con.cursor()
+
+db_cur.execute("CREATE TABLE IF NOT EXISTS rank(uid, level, totalPoint, point, msgCnt, ltrCnt)")
+db_con.commit()
 
 class Isday:
     def __init__(self, url):
@@ -171,6 +179,38 @@ async def on_message(message):
     elif message.guild.id in config.discordBotConfig['globalBanList']:
         await message.reply("このサーバーはグローバルチャット内においてBANされているため送信できません。")
         return
+    
+    # ---------- Ranking ---------- #
+    if message.guild.id in []:
+        try:
+            db_cur.execute(f"SELECT uid, level, totalPoint, point, msgCnt, ltrCnt FROM rank WHERE uid='{message.author.id}'")
+            data = db_cur.fetchall()
+
+            if (not data) or (data is None):
+                insertData = (str(message.author.id), 1, 0, 0, 0, 0)
+                db_cur.execute("INSERT INTO rank VALUES(?, ?, ?, ?, ?, ?)", insertData)
+                db_con.commit()
+
+            level = int(data[0][1])
+            point = int(data[0][3])
+            msg_cnt = int(data[0][4])
+            letter_cnt = int(data[0][5])
+
+            addPoint = math.floor(1 + len(message.content) / 20)
+            total_point = int(data[0][2]) + addPoint
+            point = point + addPoint
+            msg_cnt = msg_cnt + 1
+            letter_cnt = letter_cnt + len(message.content)
+
+            if point >= ( level ** 2 ):
+                level = level + 1
+                point = 0
+
+            db_cur.execute(f"UPDATE rank SET level='{level}', totalPoint='{total_point}', point='{point}', msgCnt='{msg_cnt}', ltrCnt='{letter_cnt}' WHERE uid='{str(message.author.id)}'")
+            db_con.commit()
+        
+        except Exception as e:
+            print(f"[ERROR] {e}")
 
     return
 
@@ -217,6 +257,69 @@ async def isday(inter: discord.Interaction):
         return
 
 
+# ----- lv ----- #
+@cmdTree.command(
+    name = 'lv',
+    description = '指定ユーザーの現在のレベルとポイントを表示します。',
+)
+async def rank(inter: discord.Interaction, user: discord.Member):
+    try:
+        db_cur.execute(f"SELECT level, totalPoint, point FROM rank WHERE uid='{user.id}'")
+        data = db_cur.fetchall()
+
+    except Exception as e:
+        await inter.response.send_message(
+            embed=discord.Embed(
+                title="エラーが発生しました",
+                color= 0xff4040,
+                description= "データベースの読み込みに失敗しました。```{e}```"
+            )
+            .set_footer(
+                text=f"エラーコード: 0x0301"
+            ),
+            ephemeral=True
+        )
+        return
+
+    if not data:
+        await inter.response.send_message(
+            embed=discord.Embed(
+                title="Level",
+                    color= 0x40ff40,
+                    description=f"{user.mention}\n"
+                ).add_field(
+                    name="レベル",
+                    value="1"
+                ).add_field(
+                    name="ポイント",
+                    value="0"
+                )
+        )
+    else:
+        level = int(data[0][0])
+        total_point = int(data[0][1])
+        point = int(data[0][2])
+
+        await inter.response.send_message(
+            embed=discord.Embed(
+                title="Level",
+                    color= 0x40ff40,
+                    description=f"{user.mention}\n"
+                ).add_field(
+                    name="レベル",
+                    value=f"{level}"
+                ).add_field(
+                    name="ポイント (レベルごと)",
+                    value=f"{point} / {level ** 2}\n"+\
+                          f"(レベルアップまであと: {(level ** 2) - point}ポイント)"
+                ).add_field(
+                    name="累計ポイント",
+                    value=total_point
+                )
+        )
+
+    return
+
 # ----------------------------------------------------- #
 # -------------------- Global Chat -------------------- #
 # ----------------------------------------------------- #
@@ -251,7 +354,7 @@ async def initGlobal(inter: discord.Interaction, category_id:str, channel_name:s
                 description= "チャンネルを作成できませんでした。"
             )
             .set_footer(
-                text=f"エラーコード: 0x0301"
+                text=f"エラーコード: 0x0401"
             ),
             ephemeral=True
         )
