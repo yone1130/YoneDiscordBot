@@ -7,25 +7,26 @@ Licensed under the Apache License 2.0
 
 """
 
-import os
 import datetime
+import math
+import os
+import sqlite3
+
+import discord
 import requests
 from bs4 import BeautifulSoup
-import discord
-from data import config
-import sqlite3
-import math
 
+from data import config
 
 # -------------------- Init -------------------- #
-clearConsole = lambda: os.system('cls' if os.name in ('nt', 'dos') else 'clear')
+clearConsole = lambda: os.system("cls" if os.name in ("nt", "dos") else "clear")
 clearConsole()
 
 print(
-    f"Yone Discord Bot  Ver {config.appConfig['version']}\n"+\
-    f"(c) 2022-2023 よね/Yone\n\n"+\
-    f"discord.py  Ver {discord.__version__}\n\n"+\
-    f"--------------------\n"
+    f"Yone Discord Bot  Ver {config.appConfig['version']}\n"
+    + f"(c) 2022 よね/Yone\n\n"
+    + f"discord.py  Ver {discord.__version__}\n\n"
+    + f"--------------------\n"
 )
 
 intents = discord.Intents.all()
@@ -36,8 +37,11 @@ cmdTree = discord.app_commands.CommandTree(client=client)
 db_con = sqlite3.connect("bot-savedata.db")
 db_cur = db_con.cursor()
 
-db_cur.execute("CREATE TABLE IF NOT EXISTS rank(uid, level, totalPoint, point, msgCnt, ltrCnt)")
+db_cur.execute(
+    "CREATE TABLE IF NOT EXISTS rank(uid, level, totalPoint, point, msgCnt, ltrCnt)"
+)
 db_con.commit()
+
 
 class Isday:
     def __init__(self, url):
@@ -49,8 +53,8 @@ class Isday:
         if res.status_code == requests.codes.ok:
             soup = BeautifulSoup(res.text, "html.parser")
 
-            elemName = soup.select('#dateDtl > dt > span')
-            elemDes = soup.select('#dateDtl > dd')
+            elemName = soup.select("#dateDtl > dt > span")
+            elemDes = soup.select("#dateDtl > dd")
             name = elemName[0].contents[0]
             des = elemDes[0].contents[0]
 
@@ -71,24 +75,19 @@ async def on_ready():
 
 
 # ---------- Commands ---------- #
-@discord.app_commands.guilds(discord.Object(id=0))
+@discord.app_commands.guilds(discord.Object(id=1053378444781703339))
 
 
 # ----- info ----- #
 @cmdTree.command(
-    name = 'info',
-    description = '情報表示',
+    name="info",
+    description="情報表示",
 )
 async def info(inter):
-    embed = discord.Embed(
-        title="Yone Bot",
-        color= 0x40ff40,
-        description=""
-    )
+    embed = discord.Embed(title="Yone Bot", color=0x40FF40, description="")
     embed.add_field(
-        name=f'Ver {config.version}',
-        value='(c) 2022-2023 よね/Yone\n'+
-              '不具合等の連絡は <@892376684093898772> までお願いいたします。'
+        name=f"Ver {config.version}",
+        value="(c) 2022-2023 よね/Yone\n" + "不具合等の連絡は <@892376684093898772> までお願いいたします。",
     )
     await inter.response.send_message(embed=embed)
 
@@ -96,37 +95,32 @@ async def info(inter):
 
 
 # ----- Embed ----- #
-@cmdTree.command(
-    name = 'embed',
-    description = 'embedメッセージを生成'
-)
+@cmdTree.command(name="embed", description="embedメッセージを生成")
 @discord.app_commands.describe(
-    title="タイトル",
-    description="概要",
-    color="16進数RGB型（例: 40ff40）"
+    title="タイトル", description="概要", color="16進数RGB型（例: 40ff40）"
 )
-async def embed(inter: discord.Interaction, description:str, title:str=None, color:str=None):
+async def embed(
+    inter: discord.Interaction, description: str, title: str = None, color: str = None
+):
     if title == None:
         title = ""
 
-    if description == None: 
+    if description == None:
         description = ""
 
     if color == None:
-        color="40ff00"
+        color = "40ff00"
 
     try:
         color = int(color, 16)
 
     except Exception as e:
-        await inter.response.send_message("引数color が16進数RGB型ではありません。（例: 40ff40）", ephemeral=True)
+        await inter.response.send_message(
+            "引数color が16進数RGB型ではありません。（例: 40ff40）", ephemeral=True
+        )
         return
 
-    embed = discord.Embed(
-        title=title,
-        color=color,
-        description=description
-    )
+    embed = discord.Embed(title=title, color=color, description=description)
 
     await inter.response.send_message(embed=embed)
 
@@ -140,29 +134,27 @@ async def on_message(message):
         return
 
     # ---------- Global Chat ---------- #
-    if message.channel.id in config.discordBotConfig['globalChannels']:
-        if message.author.id in config.discordBotConfig['globalBanList']:
+    if message.channel.id in config.discordBotConfig["globalChannels"]:
+        if message.author.id in config.discordBotConfig["globalBanList"]:
             await message.reply("あなたはグローバルチャット内においてBANされているため送信できません。")
             return
 
-        for chan in config.discordBotConfig['globalChannels']:
+        for chan in config.discordBotConfig["globalChannels"]:
             if message.channel.id == chan:
                 continue
 
             channel = client.get_channel(chan)
-            color   = 0x40ff40
+            color = 0x40FF40
 
-            embed = discord.Embed(
-                title="",
-                color=color,
-                description=message.content
-            )
+            embed = discord.Embed(title="", color=color, description=message.content)
             embed.set_author(
                 name=message.author.name,
                 # url="",
                 # icon_url=message.author.avatar_url
             )
-            embed.set_footer(text=message.guild.name)#, icon_url=message.guild.icon_url)
+            embed.set_footer(
+                text=message.guild.name
+            )  # , icon_url=message.guild.icon_url)
 
             if message.attachments != []:
                 embed.description += "\n(添付ファイル)"
@@ -176,14 +168,16 @@ async def on_message(message):
                 print(chan)
                 print(e)
 
-    elif message.guild.id in config.discordBotConfig['globalBanList']:
+    elif message.guild.id in config.discordBotConfig["globalBanList"]:
         await message.reply("このサーバーはグローバルチャット内においてBANされているため送信できません。")
         return
-    
+
     # ---------- Ranking ---------- #
-    if message.guild.id in []:
+    if message.guild.id in [1053378444781703339, 1053360115417354401]:
         try:
-            db_cur.execute(f"SELECT uid, level, totalPoint, point, msgCnt, ltrCnt FROM rank WHERE uid='{message.author.id}'")
+            db_cur.execute(
+                f"SELECT uid, level, totalPoint, point, msgCnt, ltrCnt FROM rank WHERE uid='{message.author.id}'"
+            )
             data = db_cur.fetchall()
 
             if (not data) or (data is None):
@@ -202,13 +196,15 @@ async def on_message(message):
             msg_cnt = msg_cnt + 1
             letter_cnt = letter_cnt + len(message.content)
 
-            if point >= ( level ** 2 ):
+            if point >= (level**2):
                 level = level + 1
                 point = 0
 
-            db_cur.execute(f"UPDATE rank SET level='{level}', totalPoint='{total_point}', point='{point}', msgCnt='{msg_cnt}', ltrCnt='{letter_cnt}' WHERE uid='{str(message.author.id)}'")
+            db_cur.execute(
+                f"UPDATE rank SET level='{level}', totalPoint='{total_point}', point='{point}', msgCnt='{msg_cnt}', ltrCnt='{letter_cnt}' WHERE uid='{str(message.author.id)}'"
+            )
             db_con.commit()
-        
+
         except Exception as e:
             print(f"[ERROR] {e}")
 
@@ -217,8 +213,8 @@ async def on_message(message):
 
 # ----- isday ----- #
 @cmdTree.command(
-    name = 'isday',
-    description = '今日は何の日かを送信します。',
+    name="isday",
+    description="今日は何の日かを送信します。",
 )
 async def isday(inter: discord.Interaction):
     bs = Isday(url="https://kids.yahoo.co.jp/today/")
@@ -228,30 +224,21 @@ async def isday(inter: discord.Interaction):
         print(f"{name}\n{des}")
 
         nowDate = datetime.datetime.now()
-        nowDate = nowDate.strftime('%Y年%m月%d日')
+        nowDate = nowDate.strftime("%Y年%m月%d日")
 
         embed = discord.Embed(
-        title="今日は何の日",
-            color= 0x40ff40,
-            description=f"{nowDate}\n"
+            title="今日は何の日", color=0x40FF40, description=f"{nowDate}\n"
         )
-        embed.add_field(
-            name=f"今日は {name}\n\n",
-            value=f"{des}"
-        )
+        embed.add_field(name=f"今日は {name}\n\n", value=f"{des}")
         await inter.response.send_message(embed=embed)
 
         return
 
     else:
         embed = discord.Embed(
-            title="エラーが発生しました。",
-            color= 0xff4040,
-            description="取得に失敗しました。"
+            title="エラーが発生しました。", color=0xFF4040, description="取得に失敗しました。"
         )
-        embed.set_footer(
-            text=f"エラーコード: 0x0201"
-        )
+        embed.set_footer(text=f"エラーコード: 0x0201")
         await inter.response.send_message(embed=embed)
 
         return
@@ -259,41 +246,34 @@ async def isday(inter: discord.Interaction):
 
 # ----- lv ----- #
 @cmdTree.command(
-    name = 'lv',
-    description = '指定ユーザーの現在のレベルとポイントを表示します。',
+    name="lv",
+    description="指定ユーザーの現在のレベルとポイントを表示します。",
 )
 async def rank(inter: discord.Interaction, user: discord.Member):
     try:
-        db_cur.execute(f"SELECT level, totalPoint, point FROM rank WHERE uid='{user.id}'")
+        db_cur.execute(
+            f"SELECT level, totalPoint, point FROM rank WHERE uid='{user.id}'"
+        )
         data = db_cur.fetchall()
 
     except Exception as e:
         await inter.response.send_message(
             embed=discord.Embed(
                 title="エラーが発生しました",
-                color= 0xff4040,
-                description= "データベースの読み込みに失敗しました。```{e}```"
-            )
-            .set_footer(
-                text=f"エラーコード: 0x0301"
-            ),
-            ephemeral=True
+                color=0xFF4040,
+                description="データベースの読み込みに失敗しました。```{e}```",
+            ).set_footer(text=f"エラーコード: 0x0301"),
+            ephemeral=True,
         )
         return
 
     if not data:
         await inter.response.send_message(
             embed=discord.Embed(
-                title="Level",
-                    color= 0x40ff40,
-                    description=f"{user.mention}\n"
-                ).add_field(
-                    name="レベル",
-                    value="1"
-                ).add_field(
-                    name="ポイント",
-                    value="0"
-                )
+                title="Level", color=0x40FF40, description=f"{user.mention}\n"
+            )
+            .add_field(name="レベル", value="1")
+            .add_field(name="ポイント", value="0")
         )
     else:
         level = int(data[0][0])
@@ -302,40 +282,33 @@ async def rank(inter: discord.Interaction, user: discord.Member):
 
         await inter.response.send_message(
             embed=discord.Embed(
-                title="Level",
-                    color= 0x40ff40,
-                    description=f"{user.mention}\n"
-                ).add_field(
-                    name="レベル",
-                    value=f"{level}"
-                ).add_field(
-                    name="ポイント (レベルごと)",
-                    value=f"{point} / {level ** 2}\n"+\
-                          f"(レベルアップまであと: {(level ** 2) - point}ポイント)"
-                ).add_field(
-                    name="累計ポイント",
-                    value=total_point
-                )
+                title="Level", color=0x40FF40, description=f"{user.mention}\n"
+            )
+            .add_field(name="レベル", value=f"{level}")
+            .add_field(
+                name="ポイント (レベルごと)",
+                value=f"{point} / {level ** 2}\n"
+                + f"(レベルアップまであと: {(level ** 2) - point}ポイント)",
+            )
+            .add_field(name="累計ポイント", value=total_point)
         )
 
     return
+
 
 # ----------------------------------------------------- #
 # -------------------- Global Chat -------------------- #
 # ----------------------------------------------------- #
 
+
 # ----- Init ----- #
-@cmdTree.command(
-  name = 'global-init',
-  description = 'グローバルチャットの登録'
-)
+@cmdTree.command(name="global-init", description="グローバルチャットの登録")
 @discord.app_commands.describe(
-    category_id="グローバルチャットのチャンネルを作成するカテゴリID",
-    channel_name="作成するグローバルチャットのチャンネル名"
+    category_id="グローバルチャットのチャンネルを作成するカテゴリID", channel_name="作成するグローバルチャットのチャンネル名"
 )
-async def initGlobal(inter: discord.Interaction, category_id:str, channel_name:str):
+async def initGlobal(inter: discord.Interaction, category_id: str, channel_name: str):
     category_id = int(category_id)
-    category    = client.get_channel(category_id)
+    category = client.get_channel(category_id)
 
     if category == None:
         await inter.response.send_message("カテゴリIDを正しく入力してください。", ephemeral=True)
@@ -349,36 +322,30 @@ async def initGlobal(inter: discord.Interaction, category_id:str, channel_name:s
     except Exception as e:
         await inter.response.send_message(
             embed=discord.Embed(
-                title="エラーが発生しました",
-                color= 0xff4040,
-                description= "チャンネルを作成できませんでした。"
-            )
-            .set_footer(
-                text=f"エラーコード: 0x0401"
-            ),
-            ephemeral=True
+                title="エラーが発生しました", color=0xFF4040, description="チャンネルを作成できませんでした。"
+            ).set_footer(text=f"エラーコード: 0x0401"),
+            ephemeral=True,
         )
         return
 
     await inter.response.send_message(f"グローバルチャットのチャンネルが登録されました。{ch.mention}")
 
     print(
-        "[新規チャンネル登録]\n"+\
-        f"chan ID   : {ch.id}\n"+\
-        f"chan name : {ch.name}\n"+\
-        f"sever name: {ch.guild.name}\n"
+        "[新規チャンネル登録]\n"
+        + f"chan ID   : {ch.id}\n"
+        + f"chan name : {ch.name}\n"
+        + f"sever name: {ch.guild.name}\n"
     )
-    config.discordBotConfig['globalChannels'].append(ch.id)
+    config.discordBotConfig["globalChannels"].append(ch.id)
 
-    for chan in config.discordBotConfig['globalChannels']:
+    for chan in config.discordBotConfig["globalChannels"]:
         channel = client.get_channel(chan)
-        color   = 0x40ff40
+        color = 0x40FF40
 
         embed = discord.Embed(
             title="新しいチャンネルが登録されました。",
             color=color,
-            description=f"サーバー名　: {ch.guild.name}\n"+
-                        f"チャンネル名: {ch.name}\n"
+            description=f"サーバー名　: {ch.guild.name}\n" + f"チャンネル名: {ch.name}\n",
         )
 
         try:
@@ -389,27 +356,21 @@ async def initGlobal(inter: discord.Interaction, category_id:str, channel_name:s
 
 
 # ----- Check ----- #
-@cmdTree.command(
-  name = 'global-chk',
-  description = 'グローバルチャットの登録数の確認'
-)
+@cmdTree.command(name="global-chk", description="グローバルチャットの登録数の確認")
 async def initGlobal(inter: discord.Interaction):
     content = ""
-    color   = 0x40ff40
+    color = 0x40FF40
 
     embed = discord.Embed(
         title=f"グローバルチャットの登録数：{str(len(config.discordBotConfig['globalChannels']))}",
         color=color,
-        description=content
+        description=content,
     )
 
-    for chan in config.discordBotConfig['globalChannels']:
+    for chan in config.discordBotConfig["globalChannels"]:
         channel = client.get_channel(chan)
 
-        embed.add_field(
-            name=channel.guild.name,
-            value=channel.name
-        )
+        embed.add_field(name=channel.guild.name, value=channel.name)
 
     await inter.response.send_message(embed=embed)
 
@@ -417,5 +378,4 @@ async def initGlobal(inter: discord.Interaction):
 
 
 # ---------- RUN ---------- #
-client.run(config.discordBotConfig['Token'])  # Login
-
+client.run(config.discordBotConfig["Token"])  # Login
