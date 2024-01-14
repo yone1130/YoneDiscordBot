@@ -1,11 +1,11 @@
 
 """
 
-__main__.py | Yone Discord Bot
+Yone Discord Bot
 
-(c) 2022-2023 よね/Yone
+Copyright (c) 2022-2024 よね/Yone
 
-Licensed under the Apache License 2.0
+Licensed under the Apache License 2.0.
 
 """
 
