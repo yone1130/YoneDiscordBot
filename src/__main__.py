@@ -83,30 +83,28 @@ async def info(inter):
     embed = discord.Embed(title="Yone Discord Bot", color=0x40FF40, description="")
     embed.add_field(
         name=f"Ver {config.appConfig['version']}",
-        value="Copyright (c) 2022-2023 よね/Yone\n" + "不具合等の連絡は <@892376684093898772> までお願いいたします。",
+        value="Copyright (c) 2022-2023 よね/Yone\n"
+        + "不具合等の連絡は <@892376684093898772> までお願いいたします。",
     )
     await inter.response.send_message(embed=embed)
 
     return
 
 
-@cmdTree.command(
-    name="guilds",
-    description="Botが参加しているサーバーを表示"
-)
+@cmdTree.command(name="guilds", description="Botが参加しているサーバーを表示")
 async def guilds(inter: discord.Interaction):
     try:
         num_servers = len(client.guilds)
         embed = discord.Embed(
             title=f"Yone Discord Bot",
             description=f"導入サーバー数: {num_servers}",
-            color=0x40f040
+            color=0x40F040,
         )
-        
+
         for guild in client.guilds:
             embed.add_field(
                 name=guild.name,
-                value=f"オーナー: {guild.owner.mention} ({guild.owner.name})"
+                value=f"オーナー: {guild.owner.mention} ({guild.owner.name})",
             )
 
         await inter.response.send_message(embed=embed)
@@ -117,13 +115,10 @@ async def guilds(inter: discord.Interaction):
         embed = discord.Embed(
             title="エラー",
             description=f"ハンドルされない例外が発生しました。\n```{error}```",
-            color=0xf04040
+            color=0xF04040,
         )
 
-        await inter.response.send_message(
-            embed=embed,
-            ephemeral=True
-        )
+        await inter.response.send_message(embed=embed, ephemeral=True)
         return
 
 
@@ -195,7 +190,7 @@ async def on_message(message: discord.Message):
                 total_point=total_point,
                 point=point,
                 msg_cnt=msg_cnt,
-                letter_cnt=letter_cnt
+                letter_cnt=letter_cnt,
             )
 
         except Exception as e:
@@ -229,7 +224,9 @@ async def isday(inter: discord.Interaction):
 
     else:
         embed = discord.Embed(
-            title="エラーが発生しました。", color=0xFF4040, description="取得に失敗しました。"
+            title="エラーが発生しました。",
+            color=0xFF4040,
+            description="取得に失敗しました。",
         )
         embed.set_footer(text=f"エラーコード: 0x0201")
         await inter.response.send_message(embed=embed)
