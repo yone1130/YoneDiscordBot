@@ -25,7 +25,7 @@ clearConsole = lambda: os.system("cls" if os.name in ("nt", "dos") else "clear")
 clearConsole()
 
 print(
-    f"Yone Discord Bot  Ver {config.appConfig['version']}\n"
+    f"Yone Discord Bot  Ver {config.__version__}\n"
     + f"(C) よね/Yone\n\n"
     + f"discord.py  Ver {discord.__version__}\n\n"
     + f"--------------------\n"
@@ -82,7 +82,7 @@ async def on_ready():
 async def info(inter):
     embed = discord.Embed(title="Yone Discord Bot", color=0x40FF40, description="")
     embed.add_field(
-        name=f"Ver {config.appConfig['version']}",
+        name=f"Ver {config.__version__}",
         value="Copyright (c) 2022-2023 よね/Yone\n"
         + "不具合等の連絡は <@892376684093898772> までお願いいたします。",
     )
