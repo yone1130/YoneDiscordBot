@@ -26,7 +26,7 @@ clearConsole()
 
 print(
     f"Yone Discord Bot  Ver {config.appConfig['version']}\n"
-    + f"(c) 2022-2023 よね/Yone\n\n"
+    + f"(C) よね/Yone\n\n"
     + f"discord.py  Ver {discord.__version__}\n\n"
     + f"--------------------\n"
 )
