@@ -24,7 +24,7 @@ pip install -r requirements.txt
 3. 実行
 
 ```
-python -m YoneDiscordBot
+python -m src
 ```
 
 ## ライセンス

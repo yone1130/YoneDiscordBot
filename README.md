@@ -22,7 +22,7 @@ Specify other constants as needed.
 3. Run
 
 ```
-python -m YoneDiscordBot
+python -m src
 ```
 
 ## LICENSE
