@@ -4,7 +4,7 @@
 
 ## Overview
 
-Open source version of Yone Discord Bot (for Python)
+Open source version of Yone Discord Bot (for Python).
 
 ## Usage
 
@@ -25,7 +25,7 @@ Specify other constants as needed.
 python -m src
 ```
 
-## LICENSE
+## License
 
 Licensed under the [Apache License 2.0](./LICENSE).
 
