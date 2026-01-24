@@ -1,3 +1,6 @@
-__pycashe__/
+# Python
+__pycache__/
 *.pyc
+
+# Databases
 bot-savedata.db
