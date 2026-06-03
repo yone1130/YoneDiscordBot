@@ -435,8 +435,8 @@ wheels = [
 ]
 
 [[package]]
-name = "yonediscordbot"
-version = "0.1.0"
+name = "yone_discord_bot"
+version = "0.8.0"
 source = { virtual = "." }
 dependencies = [
     { name = "beautifulsoup4" },
