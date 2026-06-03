@@ -10,7 +10,7 @@ https://github.com/yone1130/YoneDiscordBot
 """
 
 __title__ = "Yone Discord Bot"
-__version__ = "0.8.0"
+__version__ = "1.4.0"
 __description__ = "Open source version of Yone Discord Bot (for Python)"
 __author__ = "よね/Yone"
 __copyright__ = "Copyright (C) よね/Yone"
