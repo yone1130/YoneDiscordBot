@@ -25,6 +25,13 @@ pip install -r requirements.txt
 python -m src
 ```
 
+## 開発
+
+手動で依存モジュールをインストール:
+```
+uv sync
+```
+
 ## ライセンス
 
 [Apache License 2.0](./LICENSE) のもとでライセンスされます。

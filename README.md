@@ -25,6 +25,13 @@ pip install -r requirements.txt
 python -m src
 ```
 
+## Development
+
+Manually install dependencies:
+```
+uv sync
+```
+
 ## License
 
 Licensed under the [Apache License 2.0](./LICENSE).
